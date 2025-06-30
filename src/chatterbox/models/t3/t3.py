@@ -10,7 +10,7 @@ from torch import nn, Tensor
 # from transformers import LlamaModel, LlamaConfig, DynamicCache
 from .inference.custom_llama.modeling_llama import LlamaModel, LlamaConfig
 from transformers.cache_utils import StaticCache
-from transformers.generation.logits_process import TopPLogitsWarper, RepetitionPenaltyLogitsProcessor
+from transformers.generation.logits_process import MinPLogitsWarper, TopPLogitsWarper, RepetitionPenaltyLogitsProcessor
 
 from .modules.learned_pos_emb import LearnedPositionEmbeddings
 
@@ -301,9 +301,10 @@ class T3(nn.Module):
         stop_on_eos=True,
         do_sample=True,
         temperature=0.8,
-        top_p=0.8,
+        min_p=0.05,
+        top_p=1.0,
         length_penalty=1.0,
-        repetition_penalty=2.0,
+        repetition_penalty=1.2,
         cfg_weight=0,
         max_cache_len=None,
     ):
@@ -345,6 +346,7 @@ class T3(nn.Module):
         #     max_new_tokens=max_new_tokens or self.hp.max_speech_tokens,
         #     num_return_sequences=num_return_sequences,
         #     temperature=temperature,
+        #     min_p=min_p,
         #     top_p=top_p,
         #     length_penalty=length_penalty,
         #     repetition_penalty=repetition_penalty,
@@ -377,8 +379,9 @@ class T3(nn.Module):
         predicted = []  # To store the predicted tokens
 
         # Instantiate the logits processors.
+        min_p_warper = MinPLogitsWarper(min_p=min_p)
         top_p_warper = TopPLogitsWarper(top_p=top_p)
-        repetition_penalty_processor = RepetitionPenaltyLogitsProcessor(penalty=repetition_penalty)
+        repetition_penalty_processor = RepetitionPenaltyLogitsProcessor(penalty=float(repetition_penalty))
 
         # move all inputs to patched_model.dtype
         inputs_embeds = inputs_embeds.to(self.patched_model.dtype)
@@ -435,8 +438,9 @@ class T3(nn.Module):
             if temperature != 1.0:
                 logits = logits / temperature
 
-            # Apply repetition penalty and top‑p filtering.
+            # Apply repetition penalty,  min-p and top‑p filtering.
             logits = repetition_penalty_processor(generated_ids, logits)
+            logits = min_p_warper(None, logits)
             logits = top_p_warper(None, logits)
 
             # Convert logits to probabilities and sample the next token.
