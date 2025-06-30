@@ -312,6 +312,8 @@ class T3(nn.Module):
         Args:
             text_tokens: a 1D (unbatched) or 2D (batched) tensor.
         """
+        logging.warning(f"chatterbox inference - min_p={min_p}, temperature={temperature}")
+
         # Validate / sanitize inputs
         assert prepend_prompt_speech_tokens is None, "not implemented"
         _ensure_BOT_EOT(text_tokens, self.hp)
