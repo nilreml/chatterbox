@@ -214,6 +214,7 @@ class ChatterboxTTS:
         cfg_weight=0.5,
         temperature=0.8,
         min_p=0.05,
+        repetition_penalty=1.2,
         # stream - left for API compatibility
         tokens_per_slice=None,
         remove_milliseconds=None,
@@ -260,6 +261,7 @@ class ChatterboxTTS:
                 temperature=temperature,
                 min_p=min_p,
                 cfg_weight=cfg_weight,
+                repetition_penalty=repetition_penalty,
                 max_cache_len=max_cache_len,
             )
 
@@ -289,8 +291,9 @@ class ChatterboxTTS:
                     ref_dict=self.conds.gen,
                 )
                 wav = wav.squeeze(0).detach().cpu().numpy()
-                watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr)
-                return torch.from_numpy(watermarked_wav).unsqueeze(0)
+                # watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr)
+                # return torch.from_numpy(watermarked_wav).unsqueeze(0)
+                return torch.from_numpy(wav).unsqueeze(0)
 
             yield speech_to_wav(speech_tokens)
 
