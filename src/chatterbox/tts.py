@@ -213,6 +213,7 @@ class ChatterboxTTS:
         exaggeration=0.5,
         cfg_weight=0.5,
         temperature=0.8,
+        min_p=0.05,
         # stream - left for API compatibility
         tokens_per_slice=None,
         remove_milliseconds=None,
@@ -257,6 +258,7 @@ class ChatterboxTTS:
                 text_tokens=text_tokens,
                 max_new_tokens=max_new_tokens,  # TODO: use the value in config
                 temperature=temperature,
+                min_p=min_p,
                 cfg_weight=cfg_weight,
                 max_cache_len=max_cache_len,
             )
