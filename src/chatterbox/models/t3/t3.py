@@ -301,7 +301,7 @@ class T3(nn.Module):
         stop_on_eos=True,
         do_sample=True,
         temperature=0.8,
-        min_p=0.05,
+        min_p=0.08,
         top_p=1.0,
         length_penalty=1.0,
         repetition_penalty=1.2,
